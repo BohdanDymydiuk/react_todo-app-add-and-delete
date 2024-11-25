@@ -4,14 +4,23 @@ import { Todo } from '../../types/Todo';
 import { TodoItem } from '../TodoItem';
 
 interface Props {
+  tempTodo: Todo | null;
+  todoOnSelect: Todo | null;
   filteredTodos: Todo[];
-  tempTodos: Todo[];
+  idsOfRecedingTodos: number[];
   onDelete: (event: React.MouseEvent<HTMLButtonElement>, id: number) => void;
   onSelect: (id: number, todo: Todo) => void;
 }
 
 export const TodoList: React.FC<Props> = React.memo(
-  ({ filteredTodos, tempTodos, onDelete, onSelect }) => {
+  ({
+    tempTodo,
+    todoOnSelect,
+    filteredTodos,
+    idsOfRecedingTodos,
+    onDelete,
+    onSelect,
+  }) => {
     return (
       <section className="todoapp__main" data-cy="TodoList">
         {/* This todo is an active todo */}
@@ -22,12 +31,25 @@ export const TodoList: React.FC<Props> = React.memo(
             <TodoItem
               key={id}
               todo={todo}
-              tempTodos={tempTodos}
+              tempTodo={tempTodo}
+              todoOnSelect={todoOnSelect}
+              idsOfRecedingTodos={idsOfRecedingTodos}
               onDelete={onDelete}
               onSelect={onSelect}
             />
           );
         })}
+        {tempTodo && (
+          <TodoItem
+            key={tempTodo.id}
+            todo={tempTodo}
+            tempTodo={tempTodo}
+            todoOnSelect={todoOnSelect}
+            idsOfRecedingTodos={idsOfRecedingTodos}
+            onDelete={onDelete}
+            onSelect={onSelect}
+          />
+        )}
 
         {/* This form is shown instead of the title and remove button */}
         {/* <form>

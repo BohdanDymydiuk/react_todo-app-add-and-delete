@@ -5,21 +5,29 @@ import { Todo } from '../../types/Todo';
 
 interface Props {
   todo: Todo;
-  tempTodos: Todo[];
+  tempTodo: Todo | null;
+  todoOnSelect: Todo | null;
+  idsOfRecedingTodos: number[];
   onDelete: (event: React.MouseEvent<HTMLButtonElement>, id: number) => void;
   onSelect: (id: number, todo: Todo) => void;
 }
 
 export const TodoItem: React.FC<Props> = React.memo(
-  ({ todo, tempTodos, onDelete, onSelect }) => {
+  ({
+    todo,
+    tempTodo,
+    todoOnSelect,
+    idsOfRecedingTodos,
+    onDelete,
+    onSelect,
+  }) => {
     const { completed, title, id } = todo;
-    const isCurrentTemporary = tempTodos.some(tTodo => tTodo.id === id);
 
     return (
       <div
         data-cy="Todo"
         className={classNames('todo', {
-          completed: completed && !isCurrentTemporary,
+          completed: completed,
         })}
       >
         <label className="todo__status-label">
@@ -47,7 +55,10 @@ export const TodoItem: React.FC<Props> = React.memo(
         <div
           data-cy="TodoLoader"
           className={classNames('modal', 'overlay', {
-            'is-active': isCurrentTemporary,
+            'is-active':
+              tempTodo?.id === id ||
+              todoOnSelect?.id === id ||
+              idsOfRecedingTodos.includes(id),
           })}
         >
           <div className="modal-background has-background-white-ter" />

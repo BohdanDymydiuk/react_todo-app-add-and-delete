@@ -24,7 +24,9 @@ export enum Filter {
 export const App: React.FC = () => {
   const [value, setValue] = useState<string>('');
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [tempTodos, setTempTodos] = useState<Todo[]>([]);
+  const [idsOfRecedingTodos, setIdsOfRecedingTodos] = useState<number[]>([]);
+  const [tempTodo, setTempTodo] = useState<Todo | null>(null);
+  const [todoOnSelect, setTodoOnSelect] = useState<Todo | null>(null);
   const [isInputDisabled, setIsInputDisabled] = useState<boolean>(false);
   const [filter, setFilter] = useState<string>(Filter.all);
   const filteredTodos = useMemo(() => {
@@ -60,16 +62,9 @@ export const App: React.FC = () => {
   useEffect(() => {
     setTimeout(() => {
       setValue('');
-      setTempTodos([]);
-
-      if (isInputDisabled) {
-        setIsInputDisabled(false);
-      }
-
       inputRef.current?.focus();
-    }, 500);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tempTodos.length, isInputDisabled]);
+    }, 100);
+  }, [isInputDisabled]);
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -88,25 +83,26 @@ export const App: React.FC = () => {
       completed: false,
     };
 
+    setTempTodo(todo);
+    setIsInputDisabled(true);
+
     postTodo(todo)
       .then(_todo => {
         setTodos(currentTodos => [...currentTodos, _todo]);
-        setTempTodos(currTTodos => [...currTTodos, _todo]);
-        setIsInputDisabled(true);
       })
       .catch(() => {
         setError('Unable to add a todo');
-
         setTimeout(() => setError(''), 3000);
+      })
+      .finally(() => {
+        setTempTodo(null);
+        setIsInputDisabled(false);
       });
   }
 
   function deleteRequest(id: number) {
     deleteTodo(id)
       .then(() => {
-        const tTodo = todos.find(_todo => _todo.id === id) as Todo;
-
-        setTempTodos(currTTodos => [...currTTodos, tTodo]);
         setTimeout(() => {
           setTodos(currentTodos =>
             currentTodos.filter(_todo => _todo.id !== id),
@@ -117,12 +113,14 @@ export const App: React.FC = () => {
         setError('Unable to delete a todo');
 
         setTimeout(() => setError(''), 3000);
-      });
+      })
+      .finally(() => setTimeout(() => setIdsOfRecedingTodos([]), 500));
   }
 
   function onDelete(event: React.MouseEvent<HTMLButtonElement>, id: number) {
     event.preventDefault();
 
+    setIdsOfRecedingTodos(ids => [...ids, id]);
     deleteRequest(id);
   }
 
@@ -133,17 +131,21 @@ export const App: React.FC = () => {
       if (_t.completed) {
         const { id } = _t;
 
+        setIdsOfRecedingTodos(ids => [...ids, id]);
         deleteRequest(id);
       }
     });
   }
 
   function onSelect(id: number, todo: Todo) {
+    setTodoOnSelect(todo);
+
     patchTodo(id, todo).then(_todo => {
-      setTempTodos(currTTodos => [...currTTodos, _todo]);
       setTodos(currentTodos => {
         return currentTodos.map(t => (_todo.id === t.id ? _todo : t));
       });
+
+      setTodoOnSelect(null);
     });
   }
 
@@ -188,8 +190,10 @@ export const App: React.FC = () => {
           isInputDisabled={isInputDisabled}
         />
         <TodoList
+          tempTodo={tempTodo}
+          todoOnSelect={todoOnSelect}
           filteredTodos={filteredTodos}
-          tempTodos={tempTodos}
+          idsOfRecedingTodos={idsOfRecedingTodos}
           onDelete={onDelete}
           onSelect={onSelect}
         />

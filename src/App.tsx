@@ -29,11 +29,11 @@ export const App: React.FC = () => {
   const [todoOnSelect, setTodoOnSelect] = useState<Todo | null>(null);
   const [isInputDisabled, setIsInputDisabled] = useState<boolean>(false);
   const [filter, setFilter] = useState<string>(Filter.all);
+  const [error, setError] = useState<string>('');
+
   const filteredTodos = useMemo(() => {
     return todos.filter(todo => {
       switch (filter) {
-        case Filter.all:
-          return todo;
         case Filter.active:
           return !todo.completed;
         case Filter.completed:
@@ -44,7 +44,6 @@ export const App: React.FC = () => {
     });
   }, [filter, todos]);
 
-  const [error, setError] = useState<string>('');
   const inputRef = useRef<HTMLInputElement | null>(null);
   const nrOfActiveTodos = todos.filter(t => !t.completed).length;
 
@@ -52,7 +51,7 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     getTodos()
-      .then(_todos => setTodos(_todos))
+      .then(setTodos)
       .catch(() => {
         setError('Unable to load todos');
         setTimeout(() => setError(''), 3000);

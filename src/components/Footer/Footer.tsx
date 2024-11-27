@@ -24,6 +24,8 @@ export const Footer: React.FC<Props> = React.memo(
     todos,
   }) => {
     const isCompletedExists = todos.some(todo => todo.completed);
+    const filterFunctions = [allSelected, activeSelected, completedSelected];
+    const filterValues = Object.values(Filter);
 
     return (
       <footer className="todoapp__footer" data-cy="Footer">
@@ -32,38 +34,21 @@ export const Footer: React.FC<Props> = React.memo(
         </span>
 
         <nav className="filter" data-cy="Filter">
-          <a
-            href="#/"
-            className={classNames('filter__link', {
-              selected: filter === Filter.all,
-            })}
-            data-cy="FilterLinkAll"
-            onClick={allSelected}
-          >
-            All
-          </a>
-
-          <a
-            href="#/active"
-            className={classNames('filter__link', {
-              selected: filter === Filter.active,
-            })}
-            data-cy="FilterLinkActive"
-            onClick={activeSelected}
-          >
-            Active
-          </a>
-
-          <a
-            href="#/completed"
-            className={classNames('filter__link', {
-              selected: filter === Filter.completed,
-            })}
-            data-cy="FilterLinkCompleted"
-            onClick={completedSelected}
-          >
-            Completed
-          </a>
+          {filterValues.map((value, i) => {
+            return (
+              <a
+                key={value + i}
+                href="#/"
+                className={classNames('filter__link', {
+                  selected: filter === value,
+                })}
+                data-cy={`FilterLink${value}`}
+                onClick={filterFunctions[i]}
+              >
+                {value}
+              </a>
+            );
+          })}
         </nav>
 
         {/* this button should be disabled if there are no completed todos */}
@@ -71,7 +56,7 @@ export const Footer: React.FC<Props> = React.memo(
           type="button"
           className="todoapp__clear-completed"
           data-cy="ClearCompletedButton"
-          disabled={isCompletedExists ? false : true}
+          disabled={!isCompletedExists}
           onClick={onDeleteSelected}
         >
           Clear completed

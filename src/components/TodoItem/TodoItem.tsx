@@ -35,7 +35,7 @@ export const TodoItem: React.FC<Props> = React.memo(
             data-cy="TodoStatus"
             type="checkbox"
             className="todo__status"
-            checked={completed ? true : false}
+            checked={!completed}
             onChange={() => onSelect(id, { ...todo, completed: !completed })}
           />
         </label>
